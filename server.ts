@@ -1,10 +1,11 @@
 import app from "./src/app.ts";
 import { config } from "./src/config/config.ts";
-import dotenv from "dotenv";
-dotenv.config();
-const startServer = () => {
-   const port = config.port || 3004;
+import connectDB from "./src/config/db.ts";
 
+const startServer = async () => {
+   await connectDB();
+
+   const port = config.port || 3004;
    app.listen(port, () => {
       console.log(`Listening on PORT ${port} `);
    });
