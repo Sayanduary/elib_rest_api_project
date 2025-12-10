@@ -3,7 +3,7 @@ import GlobalErrorHandler from "./middlewares/GlobalHandler.ts";
 import userRouter from "./UserApi/user.Router.ts";
 
 const app = express();
-
+app.use(express.json());
 //Routes
 // http methods ;GET , POST , PUT , DELETE
 
