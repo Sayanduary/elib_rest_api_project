@@ -38,22 +38,27 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
             password: hashedPassword,
          });
       } catch (err) {
-         return next(createHttpError(500, "Error while creating user"));
+         return next(createHttpError(500, "Error while sigining jwt"));
       }
 
       // Generate JWT token
-      const token = jwt.sign(
-         { sub: newUser._id.toString() },
-         config.jwtSecret as string,
-         {
-            expiresIn: "7d",
-         },
-      );
 
-      // Response
-      return res.status(201).json({
-         accessToken: token,
-      });
+      try {
+         const token = jwt.sign(
+            { sub: newUser._id.toString() },
+            config.jwtSecret as string,
+            {
+               expiresIn: "7d",
+            },
+         );
+         // Response
+         return res.status(201).json({
+            message: "Succesfully User Registerted",
+            accessToken: token,
+         });
+      } catch (err) {
+         return next(createHttpError(500, "Error Generating Token"));
+      }
    } catch (err) {
       next(err);
    }
