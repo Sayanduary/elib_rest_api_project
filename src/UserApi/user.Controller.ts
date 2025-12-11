@@ -63,5 +63,45 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
       next(err);
    }
 };
+// End Point for login
+const loginUser = async (req: Request, res: Response, next: NextFunction) => {
+   try {
+      const { email, password } = req.body;
+      if (!email || !password) {
+         next(createHttpError(400, "Email or Password is Required"));
+      }
+      try {
+         const existingUser = await userModel.findOne({ email });
+         if (!existingUser) {
+            return next(createHttpError(404, "Email is not Registered"));
+         }
+         const isMatched = await bcrypt.compare(
+            password,
+            existingUser.password,
+         );
+         if (!isMatched) {
+            return next(
+               createHttpError(401, "Username or Password is Incorrect"),
+            );
+         }
+         // create accesstoken
+         const token = jwt.sign(
+            { sub: existingUser._id.toString() },
+            config.jwtSecret as string,
+            {
+               expiresIn: "7d",
+            },
+         );
+         return res.status(201).json({
+            message: "Succesfully Logged In",
+            accessToken: token,
+         });
+      } catch (err) {
+         return next(createHttpError(500, "Internal Server error"));
+      }
+   } catch (err) {
+      next(err);
+   }
+};
 
-export { createUser };
+export { createUser, loginUser };
