@@ -1,12 +1,14 @@
 import type { User } from "../UserApi/userTypes.ts";
-
-export interface Book {
-   _id: string;
+import mongoose from "mongoose";
+export type Book = {
+   _id: string; // or Types.ObjectId if you use it
    title: string;
-   author: User;
    genre: string;
+   author: mongoose.Schema.Types.ObjectId;
    coverImage: string;
    file: string;
-   createdAt: Date;
-   updatedAt: Date;
-}
+   coverPublicId: string;
+   pdfPublicId: string;
+   createdAt?: Date;
+   updatedAt?: Date;
+};
