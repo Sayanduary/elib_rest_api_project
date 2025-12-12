@@ -2,8 +2,9 @@ import type { Request, Response, NextFunction } from "express";
 import cloudinary from "../config/Cloudinary.ts";
 import path from "node:path";
 import { fileURLToPath } from "url";
+import createHttpError from "http-errors";
 
-// Fix ES module dirname
+// ES module dirname fix
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -11,36 +12,52 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
    try {
       const files = req.files as { [key: string]: Express.Multer.File[] };
 
-      // Validation
-      if (!files || !files.coverImage || !files.coverImage[0]) {
-         throw new Error("Cover image is required");
+      if (!files?.coverImage?.[0] || !files?.file?.[0]) {
+         return res.status(400).json({
+            success: false,
+            message: "Both cover image and PDF file are required",
+         });
       }
 
       const coverFile = files.coverImage[0];
-      const coverExt = coverFile.mimetype.split("/").at(-1) || "jpg";
-      const fileName = coverFile.filename;
+      const pdfFile = files.file[0];
 
-      // Absolute local file path
-      const filePath = path.resolve(
+      // Resolve local paths
+      const coverPath = path.resolve(
          __dirname,
          "../../public/data/uploads",
-         fileName,
+         coverFile.filename,
+      );
+      const pdfPath = path.resolve(
+         __dirname,
+         "../../public/data/uploads",
+         pdfFile.filename,
       );
 
-      // Upload to Cloudinary
-      const uploadResult = await cloudinary.uploader.upload(filePath, {
-         filename_override: fileName,
+      // Upload COVER IMAGE
+      const coverUpload = await cloudinary.uploader.upload(coverPath, {
+         filename_override: coverFile.filename,
          folder: "book-covers",
-         format: coverExt,
       });
-      console.log("uploadResult", uploadResult);
+
+      // Upload PDF AS RAW FILE
+      const pdfUpload = await cloudinary.uploader.upload(pdfPath, {
+         resource_type: "raw", // Required for PDFs
+         filename_override: pdfFile.filename,
+         folder: "book-files",
+         format: "pdf",
+      });
+
       return res.status(201).json({
-         message: "Book cover uploaded successfully",
-         cloudinaryUrl: uploadResult.secure_url,
-         publicId: uploadResult.public_id,
+         success: true,
+         message: "Book uploaded successfully",
+         coverImageUrl: coverUpload.secure_url,
+         pdfUrl: pdfUpload.secure_url,
+         coverPublicId: coverUpload.public_id,
+         pdfPublicId: pdfUpload.public_id,
       });
    } catch (error) {
-      next(error);
+      next(createHttpError(500, "Error Uploading Book"));
    }
 };
 

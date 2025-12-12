@@ -20,6 +20,11 @@ bookRouter.post(
       { name: "coverImage", maxCount: 1 },
       { name: "file", maxCount: 1 },
    ]),
+   (req, res, next) => {
+      console.log("FILES:", req.files);
+      console.log("BODY:", req.body);
+      next();
+   },
    createBook,
 );
 
