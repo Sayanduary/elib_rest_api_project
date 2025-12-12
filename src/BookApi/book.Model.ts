@@ -9,7 +9,7 @@ const bookSchema = new mongoose.Schema<Book>(
          required: true,
       },
       author: {
-         type: mongoose.Schema.Types.ObjectId,
+         type: String,
          ref: "User",
          required: true,
       },
@@ -25,6 +25,7 @@ const bookSchema = new mongoose.Schema<Book>(
          type: String,
          required: true,
       },
+      description: { type: String, required: true },
    },
    { timestamps: true },
 );

@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Response, NextFunction } from "express";
 import cloudinary from "../config/Cloudinary.ts";
 import path from "node:path";
 import { fileURLToPath } from "url";
@@ -6,16 +6,28 @@ import createHttpError from "http-errors";
 import bookModel from "./book.Model.ts";
 import type { Book } from "./book.Types.ts";
 import fs from "node:fs";
+import type { AuthRequest } from "./AuthRequest.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const createBook = async (req: Request, res: Response, next: NextFunction) => {
+export const createBook = async (
+   req: AuthRequest,
+   res: Response,
+   next: NextFunction,
+) => {
    try {
-      const { title, genre, author } = req.body;
+      const { title, genre, description } = req.body;
+      const userId = req.userId;
 
-      if (!title || !genre || !author) {
-         return next(createHttpError(400, "Title, Genre, Author required"));
+      if (!userId) {
+         return next(createHttpError(401, "Login required to upload a book"));
+      }
+
+      if (!title || !genre || !description) {
+         return next(
+            createHttpError(400, "Title, Genre, and Description required"),
+         );
       }
 
       const files = req.files as { [key: string]: Express.Multer.File[] };
@@ -41,12 +53,12 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
          pdfFile.filename,
       );
 
-      // Upload image to Cloudinary
+      // Upload Cover Image
       const coverUpload = await cloudinary.uploader.upload(coverPath, {
          folder: "book-covers",
       });
 
-      // Upload raw pdf
+      // Upload PDF
       const pdfUpload = await cloudinary.uploader.upload(pdfPath, {
          resource_type: "raw",
          folder: "book-files",
@@ -54,31 +66,29 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
       });
 
       // Save in MongoDB
-      let newBook: Book;
-      newBook = await bookModel.create({
+
+      const newBook: Book = await bookModel.create({
          title,
          genre,
-         author,
+         description,
+         author: userId, // logged-in user
          coverImage: coverUpload.secure_url,
          file: pdfUpload.secure_url,
          coverPublicId: coverUpload.public_id,
          pdfPublicId: pdfUpload.public_id,
       });
-      try {
-         await fs.promises.unlink(coverPath);
-         await fs.promises.unlink(pdfPath);
-      } catch (error) {
-         next(error);
-      }
+
+      // Cleanup local temp files
+      fs.promises.unlink(coverPath).catch(() => {});
+      fs.promises.unlink(pdfPath).catch(() => {});
+
       return res.status(201).json({
-         id: newBook._id,
          success: true,
          message: "Book uploaded successfully",
+         id: newBook._id,
          data: newBook,
       });
    } catch (error) {
       return next(createHttpError(500, "Error Uploading Book"));
    }
 };
-
-export { createBook };
