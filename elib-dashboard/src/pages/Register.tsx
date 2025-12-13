@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
+import { Link } from "react-router";
+
 const Register = () => {
   return (
     <div>
@@ -60,7 +62,10 @@ const Register = () => {
                 <Field>
                   <Button type="submit">Create Account</Button>
                   <FieldDescription className="text-center">
-                    Already have an account? <a href="#">Sign in</a>
+                    Already have an account?
+                    <Link to={"/login"} className="underline">
+                      Sign In
+                    </Link>
                   </FieldDescription>
                 </Field>
               </FieldGroup>
