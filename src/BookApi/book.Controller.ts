@@ -1,4 +1,4 @@
-import type { Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import cloudinary from "../config/Cloudinary.ts";
 import path from "node:path";
 import { fileURLToPath } from "url";
@@ -11,7 +11,7 @@ import type { AuthRequest } from "./AuthRequest.ts";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export const createBook = async (
+const createBook = async (
    req: AuthRequest,
    res: Response,
    next: NextFunction,
@@ -93,7 +93,7 @@ export const createBook = async (
    }
 };
 
-export const updateBook = async (
+const updateBook = async (
    req: AuthRequest,
    res: Response,
    next: NextFunction,
@@ -202,11 +202,7 @@ export const updateBook = async (
    }
 };
 
-export const getAllBook = async (
-   req: Request,
-   res: Response,
-   next: NextFunction,
-) => {
+const getAllBook = async (req: Request, res: Response, next: NextFunction) => {
    try {
       // todo:add pagination
       const book = await bookModel.find();
@@ -217,3 +213,64 @@ export const getAllBook = async (
       return next(createHttpError(500, "Error while getting books"));
    }
 };
+
+const getSingleBook = async (
+   req: Request,
+   res: Response,
+   next: NextFunction,
+) => {
+   const bookId = req.params.bookId;
+   try {
+      const fetchedBook = await bookModel.findById({ _id: bookId });
+      if (!fetchedBook) {
+         return next(createHttpError(404, "Resource Not Found"));
+      }
+      return res.status(200).json({
+         fetchedBook,
+      });
+   } catch (error) {
+      return next(createHttpError(500, "Error While getting a book"));
+   }
+};
+
+const deleteBook = async (
+   req: AuthRequest,
+   res: Response,
+   next: NextFunction,
+) => {
+   try {
+      const { bookId } = req.params;
+
+      const fetchedBook = await bookModel.findById(bookId);
+      if (!fetchedBook) {
+         return next(createHttpError(404, "Resource Not Found"));
+      }
+
+      if (fetchedBook.author.toString() !== req.userId) {
+         return next(
+            createHttpError(403, "You are not allowed to delete this book"),
+         );
+      }
+
+      if (fetchedBook.pdfPublicId) {
+         await cloudinary.uploader.destroy(fetchedBook.pdfPublicId, {
+            resource_type: "raw",
+         });
+      }
+
+      if (fetchedBook.coverPublicId) {
+         await cloudinary.uploader.destroy(fetchedBook.coverPublicId);
+      }
+
+      await fetchedBook.deleteOne();
+
+      res.status(200).json({
+         message: "Book deleted successfully",
+         bookId,
+      });
+   } catch (error) {
+      next(createHttpError(500, "Error while deleting book"));
+   }
+};
+
+export { createBook, updateBook, getAllBook, getSingleBook, deleteBook };
