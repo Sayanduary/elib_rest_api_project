@@ -13,8 +13,7 @@ app.use(
    }),
 );
 app.use(express.json());
-//Routes
-// http methods ;GET , POST , PUT , DELETE
+
 
 app.get("/", (req: Request, res: Response, next: NextFunction) => {
    res.json({
