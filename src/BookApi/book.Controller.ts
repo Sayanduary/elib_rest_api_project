@@ -266,7 +266,6 @@ const deleteBook = async (
 
       res.status(200).json({
          message: "Book deleted successfully",
-         bookId,
       });
    } catch (error) {
       next(createHttpError(500, "Error while deleting book"));
