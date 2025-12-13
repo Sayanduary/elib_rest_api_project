@@ -27,7 +27,7 @@ bookRouter.post(
 );
 
 bookRouter.patch(
-   "/:id",
+   "/:bookId",
    authenticate,
    upload.fields([
       { name: "coverImage", maxCount: 1 },
