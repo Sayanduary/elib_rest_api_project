@@ -1,5 +1,5 @@
 import express from "express";
-import { createBook } from "./book.Controller.ts";
+import { createBook, updateBook } from "./book.Controller.ts";
 import path from "path";
 import multer from "multer";
 import { fileURLToPath } from "url";
@@ -24,6 +24,16 @@ bookRouter.post(
    ]),
 
    createBook,
+);
+
+bookRouter.patch(
+   "/:id",
+   authenticate,
+   upload.fields([
+      { name: "coverImage", maxCount: 1 },
+      { name: "file", maxCount: 1 },
+   ]),
+   updateBook,
 );
 
 export default bookRouter;

@@ -92,3 +92,112 @@ export const createBook = async (
       return next(createHttpError(500, "Error Uploading Book"));
    }
 };
+
+export const updateBook = async (
+   req: AuthRequest,
+   res: Response,
+   next: NextFunction,
+) => {
+   try {
+      const { title, genre, description } = req.body;
+      const bookId = req.params.bookId;
+
+      const book = await bookModel.findById(bookId);
+      if (!book) {
+         return next(createHttpError(404, "Book not found"));
+      }
+
+      // Authorization check
+      if (book.author.toString() !== req.userId) {
+         return next(createHttpError(403, "Unauthorized"));
+      }
+
+      const files = req.files as { [key: string]: Express.Multer.File[] };
+
+      let updatedCoverUrl = book.coverImage;
+      let updatedPdfUrl = book.file;
+      let updatedCoverPid = book.coverPublicId;
+      let updatedPdfPid = book.pdfPublicId;
+
+      const coverFile = files?.coverImage?.[0];
+      const pdfFile = files?.file?.[0];
+
+      // Handle cover image update
+      if (coverFile) {
+         const coverPath = path.resolve(
+            __dirname,
+            "../../public/data/uploads",
+            coverFile.filename,
+         );
+
+         // Delete old cover from Cloudinary
+         if (book.coverPublicId) {
+            await cloudinary.uploader.destroy(book.coverPublicId);
+         }
+
+         // Upload new cover
+         const coverUpload = await cloudinary.uploader.upload(coverPath, {
+            folder: "book-covers",
+         });
+
+         updatedCoverUrl = coverUpload.secure_url;
+         updatedCoverPid = coverUpload.public_id;
+
+         // Cleanup
+         fs.promises.unlink(coverPath).catch(() => {});
+      }
+
+      // Handle PDF update
+      if (pdfFile) {
+         const pdfPath = path.resolve(
+            __dirname,
+            "../../public/data/uploads",
+            pdfFile.filename,
+         );
+
+         // Delete old PDF from Cloudinary
+         if (book.pdfPublicId) {
+            await cloudinary.uploader.destroy(book.pdfPublicId, {
+               resource_type: "raw",
+            });
+         }
+
+         // Upload new PDF
+         const pdfUpload = await cloudinary.uploader.upload(pdfPath, {
+            resource_type: "raw",
+            folder: "book-files",
+            format: "pdf",
+         });
+
+         updatedPdfUrl = pdfUpload.secure_url;
+         updatedPdfPid = pdfUpload.public_id;
+
+         // Cleanup
+         fs.promises.unlink(pdfPath).catch(() => {});
+      }
+
+      // Update book record
+      const updatedBook = await bookModel.findByIdAndUpdate(
+         bookId,
+         {
+            title: title || book.title,
+            genre: genre || book.genre,
+            description: description || book.description,
+            coverImage: updatedCoverUrl,
+            file: updatedPdfUrl,
+            coverPublicId: updatedCoverPid,
+            pdfPublicId: updatedPdfPid,
+         },
+         { new: true },
+      );
+
+      return res.status(200).json({
+         success: true,
+         message: "Book updated successfully",
+         data: updatedBook,
+      });
+   } catch (error) {
+      console.error(error);
+      return next(createHttpError(500, "Error updating book"));
+   }
+};
