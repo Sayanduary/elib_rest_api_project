@@ -201,3 +201,19 @@ export const updateBook = async (
       return next(createHttpError(500, "Error updating book"));
    }
 };
+
+export const getAllBook = async (
+   req: Request,
+   res: Response,
+   next: NextFunction,
+) => {
+   try {
+      // todo:add pagination
+      const book = await bookModel.find();
+      return res.json({
+         book,
+      });
+   } catch (error) {
+      return next(createHttpError(500, "Error while getting books"));
+   }
+};
