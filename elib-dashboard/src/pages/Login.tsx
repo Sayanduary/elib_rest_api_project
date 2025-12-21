@@ -10,16 +10,23 @@ import {
 import { Field, FieldDescription } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-label";
+import { useMutation } from "@tanstack/react-query";
 import { useRef } from "react";
 import { Link } from "react-router";
 
 const Login = () => {
   const emailRef = useRef<HTMLInputElement>(null);
   const passRef = useRef<HTMLInputElement>(null);
-
+  const mutation = useMutation({
+    mutationFn: login,
+    onSuccess: () => {
+      console.log("Login Successful");
+    },
+  });
   const handleLoginSubmit = () => {
     const email = emailRef.current?.value;
     const password = passRef.current?.value;
+    // mutation
 
     // make server call
   };
