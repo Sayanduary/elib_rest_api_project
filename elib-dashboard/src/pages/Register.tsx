@@ -63,7 +63,7 @@ const Register = () => {
                   <Button type="submit">Create Account</Button>
                   <FieldDescription className="text-center">
                     Already have an account?
-                    <Link to={"/login"} className="underline">
+                    <Link to={"/auth/login"} className="underline">
                       Sign In
                     </Link>
                   </FieldDescription>

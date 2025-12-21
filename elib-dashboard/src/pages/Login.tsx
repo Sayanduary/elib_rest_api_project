@@ -10,9 +10,20 @@ import {
 import { Field, FieldDescription } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-label";
+import { useRef } from "react";
 import { Link } from "react-router";
 
 const Login = () => {
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passRef = useRef<HTMLInputElement>(null);
+
+  const handleLoginSubmit = () => {
+    const email = emailRef.current?.value;
+    const password = passRef.current?.value;
+
+    // make server call
+  };
+
   return (
     <div>
       <section className="flex justify-center items-center h-screen">
@@ -28,13 +39,19 @@ const Login = () => {
             <form className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="Enter your email" />
+                <Input
+                  ref={emailRef}
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                />
 
                 <p className="mt-1 text-sm text-red-500"></p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
+                  ref={passRef}
                   id="password"
                   type="password"
                   placeholder="Enter your password"
@@ -45,14 +62,18 @@ const Login = () => {
             </form>
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full">
+            <Button
+              onClick={handleLoginSubmit}
+              type="submit"
+              className="w-full"
+            >
               Login
             </Button>
           </CardFooter>
           <Field>
             <FieldDescription className="text-center">
               Don't have an Account?{" "}
-              <Link to={"/signup"} className="underline">
+              <Link to={"/auth/register"} className="underline">
                 Register
               </Link>
             </FieldDescription>
