@@ -15,12 +15,14 @@ import { Label } from "@radix-ui/react-label";
 import { useMutation } from "@tanstack/react-query";
 import { useRef } from "react";
 import { Link, useNavigate } from "react-router";
+import { LoaderCircle } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
   const setToken = useTokenStore((state) => state.setToken);
   const emailRef = useRef<HTMLInputElement>(null);
   const passRef = useRef<HTMLInputElement>(null);
+
   const mutation = useMutation({
     mutationFn: login,
     onSuccess: (response) => {
@@ -29,6 +31,7 @@ const Login = () => {
       navigate("/dashboard/home");
     },
   });
+
   const handleLoginSubmit = () => {
     const email = emailRef.current?.value;
     const password = passRef.current?.value;
@@ -49,6 +52,7 @@ const Login = () => {
             <CardTitle>Login</CardTitle>
             <CardDescription>
               Enter your credentials to access your account
+              {mutation.isPending && <div>Loading...</div>}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -78,13 +82,20 @@ const Login = () => {
             </form>
           </CardContent>
           <CardFooter>
-            <Button
-              onClick={handleLoginSubmit}
-              type="submit"
-              className="w-full"
-            >
-              Login
-            </Button>
+            <div className="w-full flex flex-col items-center gap-3">
+              <Button
+                onClick={handleLoginSubmit}
+                type="submit"
+                className="w-full"
+                disabled={mutation.isPending}
+              >
+                {mutation.isPending && (
+                  <LoaderCircle className="animate-spin" />
+                )}
+
+                <span>Login</span>
+              </Button>
+            </div>
           </CardFooter>
           <Field>
             <FieldDescription className="text-center">
