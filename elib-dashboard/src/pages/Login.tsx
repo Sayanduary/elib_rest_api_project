@@ -10,18 +10,23 @@ import {
 import { Field, FieldDescription } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { login } from "@/http/api";
+import useTokenStore from "@/store";
 import { Label } from "@radix-ui/react-label";
 import { useMutation } from "@tanstack/react-query";
 import { useRef } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const setToken = useTokenStore((state) => state.setToken);
   const emailRef = useRef<HTMLInputElement>(null);
   const passRef = useRef<HTMLInputElement>(null);
   const mutation = useMutation({
     mutationFn: login,
-    onSuccess: () => {
+    onSuccess: (response) => {
       console.log("Login Successful");
+      setToken(response.data.accessToken);
+      navigate("/dashboard/home");
     },
   });
   const handleLoginSubmit = () => {
