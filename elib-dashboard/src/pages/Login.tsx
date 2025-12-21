@@ -52,7 +52,9 @@ const Login = () => {
             <CardTitle>Login</CardTitle>
             <CardDescription>
               Enter your credentials to access your account
-              {mutation.isPending && <div>Loading...</div>}
+              {mutation.isError && (
+                <div className="text-red-500">{"Something went wrong"}</div>
+              )}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
