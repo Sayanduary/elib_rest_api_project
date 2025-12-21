@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Field, FieldDescription } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { login } from "@/http/api";
 import { Label } from "@radix-ui/react-label";
 import { useMutation } from "@tanstack/react-query";
 import { useRef } from "react";
@@ -26,8 +27,11 @@ const Login = () => {
   const handleLoginSubmit = () => {
     const email = emailRef.current?.value;
     const password = passRef.current?.value;
+    if (!email || !password) {
+      return alert("Please enter email and password");
+    }
     // mutation
-
+    mutation.mutate({ email, password });
     // make server call
   };
 
