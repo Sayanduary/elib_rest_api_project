@@ -1,5 +1,13 @@
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+
 const HomePage = () => {
+  const navigate = useNavigate();
+
+  const handleAddBook = () => {
+    navigate("/dashboard/books/create");
+  };
+
   return (
     <>
       <div className="flex items-center">
@@ -16,7 +24,9 @@ const HomePage = () => {
           <p className="text-sm text-muted-foreground">
             You can start selling as soon as you add a book
           </p>
-          <Button className="mt-4">Add Book</Button>
+          <Button className="mt-4" onClick={handleAddBook}>
+            Add Book
+          </Button>
         </div>
       </div>
     </>

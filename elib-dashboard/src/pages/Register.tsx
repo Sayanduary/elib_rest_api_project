@@ -26,7 +26,7 @@ const Register = () => {
   const setToken = useTokenStore((state) => state.setToken);
   const emailRef = useRef<HTMLInputElement>(null);
   const passRef = useRef<HTMLInputElement>(null);
-  const nameRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null); 
 
   const mutation = useMutation({
     mutationFn: register,
